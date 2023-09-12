@@ -73,7 +73,7 @@ If you have created a Rstudio project for this assignment, the working directory
 
 ```{r setup}
 ### Write your code here
-
+library(stringr, dplyr)
 
 ```
 
