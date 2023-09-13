@@ -73,9 +73,8 @@ Your job in this assignment is to double-check the data and make it analysis-rea
 If you have created a Rstudio project for this assignment, the working directory for this assignment (the default path for any function, procedure or command that works on files) is the project directory. If you have decided otherwise, first make sure that you set your working directory to the path of the current RMarkdown file. You can also use the following code chunk to install and/or load the packages you will need for the tasks below.
 
 ```{r setup}
-### Write your code here
-
-
+### Loading in the tidyverse using pacman, install pacman and tidyverse if necessary
+pacman::p_load(tidyverse)
 ```
 
 Load the following three data sets, after downloading them from dropbox and saving them in your working directory:
@@ -85,8 +84,10 @@ Load the following three data sets, after downloading them from dropbox and savi
 - [Word data](https://www.dropbox.com/scl/fi/h4dop19ctdubhokbfsn2q/token_train.csv?rlkey=wffzcf1211bglrx8239g3e0h8&dl=0)
 
 ```{r import_datasets, message = FALSE}
-### Write your code here
-
+#assuming that data is placed in working directory
+demographics <- read_csv("demo_train.csv")
+LUs <- read_csv("LU_train.csv")
+words <- read_csv("token_train.csv")
 
 ```
 
@@ -112,9 +113,10 @@ Many different procedures can be used here, and unless you have to deal with gig
 
 
 ```{r rename_variables}
-### Write your code here
-
-
+#all three dfs have the a variation of subject in the first column and visit in the second column. Names are set to be identical
+LUs <- rename(LUs, subject = 1, visit = 2)
+demographics <- rename(demographics, subject = 1, visit = 2)
+words <- rename(words, subject = 1, visit = 2)
 ```
 
 **2. Renaming values**
@@ -123,9 +125,9 @@ Find a way to homogenize the way "visit" is reported amongst the different datas
 
 
 ```{r extract_digits}
-### Write your code here
-
-
+### extracting digits
+LUs$visit <- str_extract(LUs$visit, "\\d")
+words$visit <- str_extract(words$visit, "\\d")
 ```
 
 A similar task needs to be done regarding the value names of the Child.ID variable in the demographic data set. The values of this variable that are not abbreviated do not end with "." (i.e. Adam), whereas they do in the other two data sets (i.e. Adam.). Key merges, that is, merging of data sets based on shared variables, can only be done is the latter have overlapping value names; if no identical value names can be found, nothing will be merged. In the present case, a simple way to ensure this consists in removing all points from the values of the corresponding variables. The package **stringr** can again be of help here, notably the function **str_replace_all()**.
@@ -136,8 +138,32 @@ A similar task needs to be done regarding the value names of the Child.ID variab
 ```{r remove_points}
 ### Write your code here
 
+# LUs$subject <- str_replace_all(LUs$subject, "\\.", "")
+# words$subject <- str_replace_all(words$subject, "\\.", "")
+# demographics$subject <- str_replace_all(demographics$subject, "\\.", "")
+
+
 
 ```
+
+```{r}
+df_list <- list(demographics, LUs, words)
+
+dot_removal_func <- function(df){
+    df <- df %>% 
+        mutate(subject = str_replace_all(subject, "\\.", ""))
+}
+
+
+df_list <- map(df_list, dot_removal_func)
+
+names(df_list) <- c("demographics", "LUs", "words")
+list2env(df_list, envir = .GlobalEnv)
+
+```
+
+
+
 
 
 **4. Data subsetting **
@@ -176,7 +202,11 @@ Most variables names should make sense, that is, should be straightforward as re
 Feel free to rename the variables into something you think is more intuitive (i.e. *nonVerbalIQ*, *verbalIQ*)
 
 ```{r rename_selected_variables}
-### Write your code here
+
+
+cols_to_keep <- ("Child.ID, Visit, Diagnosis, Ethnicity, Gender, Age, ADOS,  MullenRaw, ExpressiveLangRaw, Socialization, MOT_MLU, CHI_MLU, types_MOT, types_CHI, tokens_MOT, tokens_CHI")
+
+colnames(LUs)
 
 
 ```
@@ -192,7 +222,6 @@ It is important here to check if merging the data sets:
 
 ```{r merge_data}
 ### Write your code here
-
 
 ```
 
