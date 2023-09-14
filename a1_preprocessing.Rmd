@@ -147,18 +147,18 @@ A similar task needs to be done regarding the value names of the Child.ID variab
 ```
 
 ```{r}
+#Create list of dfs
 df_list <- list(demographics, LUs, words)
 
+#define function to remove "." from subject column
 dot_removal_func <- function(df){
     df <- df %>% 
         mutate(subject = str_replace_all(subject, "\\.", ""))
 }
 
-
+#overwrite df_list with list of modified dfs where dots have been removed by applying the above defined funciton
 df_list <- map(df_list, dot_removal_func)
 
-names(df_list) <- c("demographics", "LUs", "words")
-list2env(df_list, envir = .GlobalEnv)
 
 ```
 
@@ -203,10 +203,21 @@ Feel free to rename the variables into something you think is more intuitive (i.
 
 ```{r rename_selected_variables}
 
+#Vector of target col names
+variables_of_interest <- c("subject", "visit", "Diagnosis", "Ethnicity", "Gender", "Age", "ADOS",  "MullenRaw", "ExpressiveLangRaw", "Socialization", "MOT_MLU", "CHI_MLU", "types_MOT", "types_CHI", "tokens_MOT", "tokens_CHI")
 
-cols_to_keep <- ("Child.ID, Visit, Diagnosis, Ethnicity, Gender, Age, ADOS,  MullenRaw, ExpressiveLangRaw, Socialization, MOT_MLU, CHI_MLU, types_MOT, types_CHI, tokens_MOT, tokens_CHI")
 
-colnames(LUs)
+
+#def function to select variables present in list and given df
+var_of_int_func <- function(df) {
+    
+    df <-  df %>% 
+        select(intersect(colnames(df), variables_of_interest))
+} 
+
+
+#apply variable selection func across list
+df_list <- map(df_list, var_of_int_func)
 
 
 ```
@@ -221,7 +232,14 @@ It is important here to check if merging the data sets:
 - has resulted in the creation of NAs within the merged data set. If this is so, it is important to understand why these NAs were created (e.g. some measures were not taken at all visits, some recordings were lost or permission to use was withdrawn).
 
 ```{r merge_data}
-### Write your code here
+#first unlist modified dfs from list
+names(df_list) <- c("demographics", "LUs", "words")
+list2env(df_list, envir = .GlobalEnv)
+
+merged_df <- demographics %>% 
+    inner_join(LUs, by = "subject") %>% 
+    inner_join(words, by = "subject")
+
 
 ```
 
@@ -238,6 +256,8 @@ A possible way to do so:
 
 ```{r add_first_visit_variables}
 ### Write your code here
+
+
 
 
   
