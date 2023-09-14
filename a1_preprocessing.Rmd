@@ -236,9 +236,14 @@ It is important here to check if merging the data sets:
 names(df_list) <- c("demographics", "LUs", "words")
 list2env(df_list, envir = .GlobalEnv)
 
+#vist column to doubles
+LUs$visit <- as.double(LUs$visit)
+words$visit <- as.double(words$visit)
+
+#merging dfs
 merged_df <- demographics %>% 
-    inner_join(LUs, by = "subject") %>% 
-    inner_join(words, by = "subject")
+    left_join(LUs) %>% 
+    left_join(words)
 
 
 ```
@@ -256,11 +261,15 @@ A possible way to do so:
 
 ```{r add_first_visit_variables}
 ### Write your code here
+first_visit_df <- merged_df %>%
+    filter(visit == 1)
 
+merged_df <- merged_df %>% 
+    mutate(
+        ADOS1 = first_visit_df$ADOS
+        
+    )
 
-
-
-  
 ```
 
 **7. Reverse Encoding**
