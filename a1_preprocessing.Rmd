@@ -206,10 +206,18 @@ A possible way to do so:
 
 
 ```{r add_first_visit_variables}
-### Write your code here
-
-
-  
+temp <- full_data %>% 
+    select(SUBJ, VISIT, ADOS, MullenRaw, ExpressiveLangRaw, Socialization)
+temp <- temp %>% 
+    rename(ADOS1 = ADOS, MullenRaw1 = MullenRaw, ExpressiveLangRaw1 = ExpressiveLangRaw, Socialization1 = Socialization)
+temp1 <- temp %>% 
+    filter(VISIT == 1)
+final_temp <- merge(temp1, temp, by.x=c('SUBJ'), by.y=c('SUBJ'), all.x = TRUE)
+final_temp <- final_temp %>% 
+    select(SUBJ, VISIT.y, ADOS1.x, MullenRaw1.x, ExpressiveLangRaw1.x, Socialization1.x)
+final_temp <- final_temp %>% 
+    rename(VISIT = VISIT.y, ADOS1 = ADOS1.x, MullenRaw1 = MullenRaw1.x, ExpressiveLangRaw1 = ExpressiveLangRaw1.x, Socialization1 = Socialization1.x)
+full_data_set <- merge(full_data, final_temp, by.x=c('SUBJ', 'VISIT'), by.y=c('SUBJ', 'VISIT'), all=TRUE)
 ```
 
 **7. Reverse Encoding**
@@ -217,9 +225,11 @@ A possible way to do so:
 An important part of data cleaning is making sure both variable names and value allow for easy and intuitive analysis and interpretation. For example, the different values for the categorical variable *gender* have been encoded to '1' and '2', but these numbers are useless to anyone who doesn't have the proper encoding dictionary, which maps each number to the corresponding category, namely 'male' or 'female'. In the following code chunk, resolve this ambiguity by reversing the encoding of the gender variable, so that 1 and 2 are changed to F and M respectively. In the same vein, transform the 'Diagnosis' variable so that 'A's and 'B's are reverted back to ASD (Autism Spectrum Disorder) and TD (typically developing) respectively.
 
 ```{r revert_encoding}
-### Write your code here
-
-
+# first resolve gender 1= M, 2= F
+full_data_set$Gender <- replace(full_data_set$Gender, full_data_set$Gender==1, "M")
+full_data_set$Gender <- replace(full_data_set$Gender, full_data_set$Gender==2, "F")
+full_data_set$Diagnosis <- replace(full_data_set$Diagnosis, full_data_set$Diagnosis=="A", "ASD")
+full_data_set$Diagnosis <- replace(full_data_set$Diagnosis, full_data_set$Diagnosis=="B", "TD")
 ```
 
 **8. Saving cleaned data**
@@ -227,9 +237,7 @@ An important part of data cleaning is making sure both variable names and value 
 Finally, save the cleaned data in Comma-Separated Values (CSV) format, under a name and at a location of your own choosing.
 
 ```{r save_changes}
-### Write your code here
-
-
+write_csv(full_data_set, "full_filtered_data.csv")
 ```
 
 Your data is now ready for the next assignment!
