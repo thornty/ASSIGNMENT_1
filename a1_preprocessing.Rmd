@@ -15,12 +15,11 @@ knit: (function(inputFile, encoding) {
     rmarkdown::render(
       inputFile,
       encoding = encoding,
-      output_dir = 'documents/assignments/solutions',
+      output_dir = 'documents/assignments/instructions',
       output_file = "a1_preprocessing.html"))})
 bibliography: '../../varia/bibliography.bib'
 ---
 
-***THIS IS A TEST***
 
 The objective of this warm-up assignment is to brush up your programming and data wrangling skills as well as to introduce you to the data set you will be working on in Assignment 1. More precisely, you will here be asked here to do the following:
 
@@ -206,10 +205,19 @@ A possible way to do so:
 
 
 ```{r add_first_visit_variables}
-### Write your code here
+first_visits_data <- full_data %>%
+  group_by(SUBJ) %>%
+  filter(row_number() == 1) %>%
+  select(SUBJ, ADOS, MullenRaw, ExpressiveLangRaw, Socialization)
 
+first_visits_data <- first_visits_data %>%
+  rename(ADOS1 = ADOS,
+         MullenRaw1 = MullenRaw,
+         ExpressiveLangRaw1 = ExpressiveLangRaw,
+         Socialization1 = Socialization)
 
-  
+final_data <- full_data %>%
+  left_join(first_visits_data, by = "SUBJ")
 ```
 
 **7. Reverse Encoding**
@@ -217,9 +225,11 @@ A possible way to do so:
 An important part of data cleaning is making sure both variable names and value allow for easy and intuitive analysis and interpretation. For example, the different values for the categorical variable *gender* have been encoded to '1' and '2', but these numbers are useless to anyone who doesn't have the proper encoding dictionary, which maps each number to the corresponding category, namely 'male' or 'female'. In the following code chunk, resolve this ambiguity by reversing the encoding of the gender variable, so that 1 and 2 are changed to F and M respectively. In the same vein, transform the 'Diagnosis' variable so that 'A's and 'B's are reverted back to ASD (Autism Spectrum Disorder) and TD (typically developing) respectively.
 
 ```{r revert_encoding}
-### Write your code here
+final_data$Gender[final_data$Gender == 2] <- "female"
+final_data$Gender[final_data$Gender == 1] <- "male"
 
-
+final_data$Diagnosis[final_data$Diagnosis == 'A'] <- "ASD"
+final_data$Diagnosis[final_data$Diagnosis == 'B'] <- "TD"
 ```
 
 **8. Saving cleaned data**
@@ -227,9 +237,7 @@ An important part of data cleaning is making sure both variable names and value 
 Finally, save the cleaned data in Comma-Separated Values (CSV) format, under a name and at a location of your own choosing.
 
 ```{r save_changes}
-### Write your code here
-
-
+write_csv(final_data, "Final_Data.csv")
 ```
 
 Your data is now ready for the next assignment!
