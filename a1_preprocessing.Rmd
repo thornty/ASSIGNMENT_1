@@ -264,11 +264,20 @@ A possible way to do so:
 first_visit_df <- merged_df %>%
     filter(visit == 1)
 
+#update df
 merged_df <- merged_df %>% 
+    
+    #for each combination of following parameters (only subject) create the following new coloumns
+    group_by(subject) %>% 
+    
     mutate(
-        ADOS1 = first_visit_df$ADOS
-        
-    )
+        #Create a new column for ADOS measurement at visit 1. Which creates new column with values for given subject at first visit
+        ADOS1 = ADOS[which(visit==1)],
+        MullenRaw1 = MullenRaw[which(visit==1)],
+        ExpressiveLangRaw1 = ExpressiveLangRaw[which(visit==1)],
+        Socialization1 = Socialization[which(visit==1)])
+
+
 
 ```
 
@@ -278,6 +287,9 @@ An important part of data cleaning is making sure both variable names and value 
 
 ```{r revert_encoding}
 ### Write your code here
+
+
+
 
 
 ```
