@@ -277,8 +277,6 @@ merged_df <- merged_df %>%
         ExpressiveLangRaw1 = ExpressiveLangRaw[which(visit==1)],
         Socialization1 = Socialization[which(visit==1)])
 
-
-
 ```
 
 **7. Reverse Encoding**
@@ -286,9 +284,12 @@ merged_df <- merged_df %>%
 An important part of data cleaning is making sure both variable names and value allow for easy and intuitive analysis and interpretation. For example, the different values for the categorical variable *gender* have been encoded to '1' and '2', but these numbers are useless to anyone who doesn't have the proper encoding dictionary, which maps each number to the corresponding category, namely 'male' or 'female'. In the following code chunk, resolve this ambiguity by reversing the encoding of the gender variable, so that 1 and 2 are changed to F and M respectively. In the same vein, transform the 'Diagnosis' variable so that 'A's and 'B's are reverted back to ASD (Autism Spectrum Disorder) and TD (typically developing) respectively.
 
 ```{r revert_encoding}
-### Write your code here
-
-
+### reverse gender and Diagnosis encoding
+merged_df <- merged_df %>% 
+    mutate(
+        Gender = if_else(Gender == "1", "M", "F"),
+        Diagnosis = if_else(Diagnosis == "A", "ASD", "TD")
+    )
 
 
 
@@ -299,7 +300,9 @@ An important part of data cleaning is making sure both variable names and value 
 Finally, save the cleaned data in Comma-Separated Values (CSV) format, under a name and at a location of your own choosing.
 
 ```{r save_changes}
-### Write your code here
+#save clean data to .csv
+
+write_csv(merged_df, "cleaned_data.csv")
 
 
 ```
