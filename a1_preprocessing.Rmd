@@ -17,7 +17,7 @@ knit: (function(inputFile, encoding) {
       encoding = encoding,
       output_dir = 'documents/assignments/solutions',
       output_file = "a1_preprocessing.html"))})
-bibliography: '../../varia/bibliography.bib'
+#bibliography: '../../varia/bibliography.bib'
 ---
 
 ***THIS IS A TEST***
