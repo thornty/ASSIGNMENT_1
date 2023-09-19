@@ -135,17 +135,6 @@ A similar task needs to be done regarding the value names of the Child.ID variab
 **Tip:** You can either have one line of code for each child name that needs to be changed (easier, more typing) or specify the pattern that you want to replace (more complicated: look up "regular expressions", but more generic and thus less typing)
 
 
-```{r remove_points}
-### Write your code here
-
-# LUs$subject <- str_replace_all(LUs$subject, "\\.", "")
-# words$subject <- str_replace_all(words$subject, "\\.", "")
-# demographics$subject <- str_replace_all(demographics$subject, "\\.", "")
-
-
-
-```
-
 ```{r}
 #Create list of dfs
 df_list <- list(demographics, LUs, words)
@@ -161,8 +150,6 @@ df_list <- map(df_list, dot_removal_func)
 
 
 ```
-
-
 
 
 
@@ -260,22 +247,24 @@ A possible way to do so:
 
 
 ```{r add_first_visit_variables}
-### Write your code here
-first_visit_df <- merged_df %>%
-    filter(visit == 1)
+temp_df <- merged_df 
 
 #update df
-merged_df <- merged_df %>% 
+merged_df <- temp_df %>% 
     
     #for each combination of following parameters (only subject) create the following new coloumns
     group_by(subject) %>% 
     
     mutate(
         #Create a new column for ADOS measurement at visit 1. Which creates new column with values for given subject at first visit
-        ADOS1 = ADOS[which(visit==1)],
-        MullenRaw1 = MullenRaw[which(visit==1)],
-        ExpressiveLangRaw1 = ExpressiveLangRaw[which(visit==1)],
-        Socialization1 = Socialization[which(visit==1)])
+        ADOS1 = ADOS[visit==1],
+        MullenRaw1 = MullenRaw[visit==1],
+        ExpressiveLangRaw1 = ExpressiveLangRaw[visit==1],
+        Socialization1 = Socialization[visit==1])
+        
+    
+
+
 
 ```
 
@@ -303,7 +292,6 @@ Finally, save the cleaned data in Comma-Separated Values (CSV) format, under a n
 #save clean data to .csv
 
 write_csv(merged_df, "cleaned_data.csv")
-
 
 ```
 
