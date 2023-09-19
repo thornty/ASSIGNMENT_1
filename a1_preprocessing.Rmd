@@ -73,7 +73,10 @@ If you have created a Rstudio project for this assignment, the working directory
 
 ```{r setup}
 ### Write your code here
+install.packages("pacman")
 
+pacman::p_load(tidyverse)
+pacman::p_load(stringr)
 
 ```
 
@@ -86,8 +89,21 @@ Load the following three data sets, after downloading them from dropbox and savi
 ```{r import_datasets, message = FALSE}
 ### Write your code here
 
-
+demo_train <-  read_csv("demo_train.csv")
+LU_train <- read_csv("LU_train.csv")
+token_train <- read_csv("token_train.csv")
 ```
+
+```{r}
+head(demo_train)
+```
+```{r}
+head(LU_train)
+```
+```{r}
+head(token_train)
+```
+
 
 Using various visualisation and aggregation procedures, explore these data sets and try to compare them to each other and draw parallel. You'll quickly notice that this is not an easy task. This is in part due to the fact that the different data sets were built by different researchers at different points in time. In particular, you'll find out that: 
 
@@ -109,11 +125,14 @@ The first task thus consists in identifying which variable names are spelled dif
 
 Many different procedures can be used here, and unless you have to deal with gigantic data sets and have severe limitations in terms of computation time and space, there is no need for optimization here. Whatever works works.
 
-
 ```{r rename_variables}
 ### Write your code here
 
+demo_train <- rename(demo_train, "SUBJ" = "Child.ID")
 
+demo_train <- rename(demo_train, "VISIT" = "Visit")
+
+demo_train
 ```
 
 **2. Renaming values**
@@ -124,7 +143,19 @@ Find a way to homogenize the way "visit" is reported amongst the different datas
 ```{r extract_digits}
 ### Write your code here
 
+token_train <- token_train %>% 
+    mutate(VISIT = str_extract(VISIT,'\\d'))
+           
+LU_train <- LU_train %>% 
+    mutate(VISIT = str_extract(VISIT,'\\d'))
 
+demo_train <- demo_train %>% 
+    mutate(VISIT = str_extract(VISIT, '\\d'))
+
+token_train
+LU_train
+demo_train
+        
 ```
 
 A similar task needs to be done regarding the value names of the Child.ID variable in the demographic data set. The values of this variable that are not abbreviated do not end with "." (i.e. Adam), whereas they do in the other two data sets (i.e. Adam.). Key merges, that is, merging of data sets based on shared variables, can only be done is the latter have overlapping value names; if no identical value names can be found, nothing will be merged. In the present case, a simple way to ensure this consists in removing all points from the values of the corresponding variables. The package **stringr** can again be of help here, notably the function **str_replace_all()**.
@@ -134,6 +165,20 @@ A similar task needs to be done regarding the value names of the Child.ID variab
 
 ```{r remove_points}
 ### Write your code here
+
+demo_train <- demo_train %>% 
+    mutate(SUBJ = str_replace_all(SUBJ,"\\.",""))
+    
+LU_train <- LU_train %>% 
+    mutate(SUBJ = str_replace_all(SUBJ,"\\.",""))
+
+
+token_train <- token_train %>% 
+    mutate(SUBJ = str_replace_all(SUBJ,"\\.",""))
+    
+demo_train
+LU_train
+token_train
 
 
 ```
@@ -177,9 +222,16 @@ Feel free to rename the variables into something you think is more intuitive (i.
 ```{r rename_selected_variables}
 ### Write your code here
 
+demo_train <- demo_train %>%  
+    select(SUBJ, VISIT, Ethnicity, Diagnosis, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw, Socialization)
+
+token_train <- token_train %>% 
+    select(SUBJ, VISIT, types_MOT, types_CHI, tokens_MOT, tokens_CHI)
+
+LU_train <- LU_train %>% 
+    select(SUBJ, VISIT, MOT_MLU, CHI_MLU)
 
 ```
-
 **5. Data merge**
 
 Following completion of the previous cleaning procedures, the different data sets can now be merged into a single one.
@@ -192,7 +244,10 @@ It is important here to check if merging the data sets:
 ```{r merge_data}
 ### Write your code here
 
-
+part_merge <- merge(demo_train, token_train, by.x=c("SUBJ","VISIT"), by.y=c("SUBJ","VISIT"))
+full_merge <- merge(part_merge, LU_train, by.x=c("SUBJ", "VISIT"), by.y=c("SUBJ", "VISIT"))
+                 
+             
 ```
 
 **6. Data filtering**
@@ -209,6 +264,14 @@ A possible way to do so:
 ```{r add_first_visit_variables}
 ### Write your code here
 
+data_VISIT1 <- full_merge %>%
+    filter(VISIT == 1) %>% 
+    select(SUBJ, VISIT, ADOS, MullenRaw, ExpressiveLangRaw, Socialization) %>% 
+    rename(ADOS1 = ADOS, MullenRaw1 = MullenRaw, ExpressiveLangRaw1 = ExpressiveLangRaw, Socialization1 = Socialization)
+
+
+
+data2.0 <- merge(full_merge, data_VISIT1, by.x 'SUBJ', by.y ='SUBJ')
 
   
 ```
@@ -220,6 +283,10 @@ An important part of data cleaning is making sure both variable names and value 
 ```{r revert_encoding}
 ### Write your code here
 
+data3.0 <- data2.0 %>% 
+    mutate(Gender = recode(Gender,"1" = "M","2" = "F"), 
+           Diagnosis = recode(Diagnosis, "A" = "ASD", "B" = "TD")
+           )
 
 ```
 
@@ -230,7 +297,7 @@ Finally, save the cleaned data in Comma-Separated Values (CSV) format, under a n
 ```{r save_changes}
 ### Write your code here
 
-
+write.csv(data3.0, "ASD_lang.csv")
 ```
 
 Your data is now ready for the next assignment!
