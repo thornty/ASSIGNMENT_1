@@ -244,8 +244,8 @@ It is important here to check if merging the data sets:
 ```{r merge_data}
 ### Write your code here
 
-part_merge <- merge(demo_train, token_train, by.x=c("SUBJ","VISIT"), by.y=c("SUBJ","VISIT"))
-full_merge <- merge(part_merge, LU_train, by.x=c("SUBJ", "VISIT"), by.y=c("SUBJ", "VISIT"))
+part_merge <- merge(demo_train, token_train, by.x=c("SUBJ","VISIT"), by.y=c("SUBJ","VISIT"), all = T)
+full_merge <- merge(part_merge, LU_train, by.x=c("SUBJ", "VISIT"), by.y=c("SUBJ", "VISIT"), all = T)
                  
              
 ```
@@ -260,20 +260,26 @@ A possible way to do so:
 * rename the clinical variables in a way that clearly indicates they relate to the first visit (e.g. *ADOS* to *ADOS1*)
 * merge the new data set with the old
 
-
 ```{r add_first_visit_variables}
 ### Write your code here
 
-data_VISIT1 <- full_merge %>%
+temp <- full_merge %>%
     filter(VISIT == 1) %>% 
     select(SUBJ, VISIT, ADOS, MullenRaw, ExpressiveLangRaw, Socialization) %>% 
     rename(ADOS1 = ADOS, MullenRaw1 = MullenRaw, ExpressiveLangRaw1 = ExpressiveLangRaw, Socialization1 = Socialization)
 
 
+full_data <- full_merge %>%
+  left_join(temp %>% filter(VISIT == 1), by = c("SUBJ", "VISIT")) %>%
+  mutate(
+    MullenRaw1 = ifelse(VISIT == 1, MullenRaw1, MullenRaw),
+    ExpressiveLangRaw1 = ifelse(VISIT == 1, ExpressiveLangRaw1, ExpressiveLangRaw),
+    Socialization1 = ifelse(VISIT == 1, Socialization1, Socialization),
+    ADOS1 = ifelse(VISIT == 1, ADOS1, ADOS)
+  ) %>%
+  fill(MullenRaw1, ExpressiveLangRaw1, Socialization1, ADOS1) 
 
-data2.0 <- merge(full_merge, data_VISIT1, by.x 'SUBJ', by.y ='SUBJ')
 
-  
 ```
 
 **7. Reverse Encoding**
@@ -283,7 +289,7 @@ An important part of data cleaning is making sure both variable names and value 
 ```{r revert_encoding}
 ### Write your code here
 
-data3.0 <- data2.0 %>% 
+full_data <- full_data %>% 
     mutate(Gender = recode(Gender,"1" = "M","2" = "F"), 
            Diagnosis = recode(Diagnosis, "A" = "ASD", "B" = "TD")
            )
@@ -297,7 +303,7 @@ Finally, save the cleaned data in Comma-Separated Values (CSV) format, under a n
 ```{r save_changes}
 ### Write your code here
 
-write.csv(data3.0, "ASD_lang.csv")
+write.csv(full_data, "ASD_TD_lang.csv")
 ```
 
 Your data is now ready for the next assignment!
